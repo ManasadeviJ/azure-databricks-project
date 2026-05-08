@@ -1,0 +1,36 @@
+{
+	"name": "AssignBaseSource",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AssignLinkedService",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"folder_name": {
+				"type": "string",
+				"defaultValue": "@pipeline().parameters.folder_name"
+			},
+			"file_name": {
+				"type": "string",
+				"defaultValue": "''"
+			}
+		},
+		"annotations": [],
+		"type": "Binary",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": {
+					"value": "@item().name",
+					"type": "Expression"
+				},
+				"folderPath": {
+					"value": "@pipeline().parameters.folder_name\n",
+					"type": "Expression"
+				},
+				"fileSystem": "sales-view-devtst"
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

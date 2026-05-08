@@ -1,0 +1,15 @@
+{
+	"name": "adfactory-mj",
+	"properties": {
+		"trustModeClaimForMi": {
+			"value": "Enabled",
+			"editable": true
+		}
+	},
+	"location": "southeastasia",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "dfa8250f-5206-49e1-a8f2-a0f0d8991a35",
+		"tenantId": "744635b5-21fa-4caf-a046-5ac7cf07e431"
+	}
+}

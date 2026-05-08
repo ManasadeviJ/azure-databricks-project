@@ -1,0 +1,119 @@
+{
+	"name": "PL_WebActivity_Demo",
+	"properties": {
+		"activities": [
+			{
+				"name": "Web1",
+				"type": "WebActivity",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"method": "GET",
+					"url": {
+						"value": "@concat('https://api.agify.io?name=', pipeline().parameters.name)",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "PredictAge",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "Web1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "predictedAge",
+					"value": {
+						"value": "@string(activity('Web1').output.age)",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "If Condition1",
+				"type": "IfCondition",
+				"dependsOn": [
+					{
+						"activity": "PredictAge",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@equals(int(variables('predictedAge')), pipeline().parameters.checkAge)",
+						"type": "Expression"
+					},
+					"ifFalseActivities": [
+						{
+							"name": "False",
+							"type": "SetVariable",
+							"dependsOn": [],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "predictedAge",
+								"value": "\"Not Match: Age is different\""
+							}
+						}
+					],
+					"ifTrueActivities": [
+						{
+							"name": "True",
+							"type": "SetVariable",
+							"dependsOn": [],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "predictedAge",
+								"value": "\"Match: Age is correct\""
+							}
+						}
+					]
+				}
+			}
+		],
+		"parameters": {
+			"name": {
+				"type": "string",
+				"defaultValue": "Manasa"
+			},
+			"checkAge": {
+				"type": "int"
+			}
+		},
+		"variables": {
+			"predictedAge": {
+				"type": "String"
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2026-04-07T16:12:52Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

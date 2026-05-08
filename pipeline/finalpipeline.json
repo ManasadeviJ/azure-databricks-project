@@ -1,0 +1,204 @@
+{
+	"name": "finalpipeline",
+	"properties": {
+		"activities": [
+			{
+				"name": "GetMetadata_Folder",
+				"type": "GetMetadata",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "AssignBaseToSource",
+						"type": "DatasetReference",
+						"parameters": {
+							"folder_name": "@pipeline().parameters.folder_name",
+							"file_name": {
+								"value": "@''",
+								"type": "Expression"
+							}
+						}
+					},
+					"fieldList": [
+						"childItems"
+					],
+					"storeSettings": {
+						"type": "AzureBlobFSReadSettings",
+						"recursive": true,
+						"enablePartitionDiscovery": false
+					},
+					"formatSettings": {
+						"type": "BinaryReadSettings"
+					}
+				}
+			},
+			{
+				"name": "Filter_Files",
+				"type": "Filter",
+				"dependsOn": [
+					{
+						"activity": "GetMetadata_Folder",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('GetMetadata_Folder').output.childItems",
+						"type": "Expression"
+					},
+					"condition": {
+						"value": "@equals(item().type, 'File')",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "ForEach1",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Filter_Files",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Filter_Files').output.value",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "GetMetadata_File",
+							"type": "GetMetadata",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"dataset": {
+									"referenceName": "AssignBaseSource",
+									"type": "DatasetReference",
+									"parameters": {
+										"folder_name": "@pipeline().parameters.folder_name",
+										"file_name": "@item().name"
+									}
+								},
+								"fieldList": [
+									"lastModified"
+								],
+								"storeSettings": {
+									"type": "AzureBlobFSReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "BinaryReadSettings"
+								}
+							}
+						},
+						{
+							"name": "Copy_To_Bronze",
+							"type": "Copy",
+							"dependsOn": [
+								{
+									"activity": "GetMetadata_File",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "BinarySource",
+									"storeSettings": {
+										"type": "AzureBlobFSReadSettings",
+										"recursive": true
+									},
+									"formatSettings": {
+										"type": "BinaryReadSettings"
+									}
+								},
+								"sink": {
+									"type": "BinarySink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings"
+									}
+								},
+								"enableStaging": false
+							},
+							"inputs": [
+								{
+									"referenceName": "AssignBaseSource",
+									"type": "DatasetReference",
+									"parameters": {
+										"folder_name": "@pipeline().parameters.folder_name",
+										"file_name": "@item().name"
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "AssignSinkBronze",
+									"type": "DatasetReference",
+									"parameters": {
+										"folder_name": "@pipeline().parameters.folder_name",
+										"file_name": "@item().name"
+									}
+								}
+							]
+						}
+					]
+				}
+			}
+		],
+		"parameters": {
+			"folder_name": {
+				"type": "string",
+				"defaultValue": "customer"
+			}
+		},
+		"variables": {
+			"latest_file_time": {
+				"type": "String"
+			},
+			"temp_time": {
+				"type": "String"
+			},
+			"Set_latest_time": {
+				"type": "String"
+			},
+			"Set_temp_time": {
+				"type": "String"
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2026-04-15T19:01:33Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

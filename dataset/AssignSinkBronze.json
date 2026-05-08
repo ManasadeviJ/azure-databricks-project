@@ -1,0 +1,39 @@
+{
+	"name": "AssignSinkBronze",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AssignLinkedService",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"folder_name": {
+				"type": "string",
+				"defaultValue": "@concat('bronze/sales_view/', dataset().folder_name)"
+			},
+			"file_name": {
+				"type": "string",
+				"defaultValue": "''"
+			}
+		},
+		"annotations": [],
+		"type": "Binary",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": {
+					"value": "@dataset().file_name",
+					"type": "Expression"
+				},
+				"folderPath": {
+					"value": "@concat('sales_view/', dataset().folder_name)",
+					"type": "Expression"
+				},
+				"fileSystem": {
+					"value": "bronze",
+					"type": "Expression"
+				}
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

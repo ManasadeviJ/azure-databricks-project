@@ -1,0 +1,17 @@
+{
+	"name": "AzureSqlTable_NewEmployees",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_AzureSQL",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "newemployees"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}
