@@ -31,7 +31,7 @@
 					"source": {
 						"type": "AzureSqlSource",
 						"sqlReaderQuery": {
-							"value": "select * from @{pipeline().parameters.schema}.@{pipeline().parameters.table} Where @{pipeline().parameters.cdc_col} > '@{activity('last_dataset_incremental').output.value[0].cdc}'",
+							"value": "select * from @{pipeline().parameters.schema}.@{pipeline().parameters.table}\nWhere @{pipeline().parameters.cdc_col} > '@{activity('last_dataset_incremental').output.firstRow.cdc}'",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -127,6 +127,116 @@
 						"value": "@utcNow()",
 						"type": "Expression"
 					}
+				}
+			},
+			{
+				"name": "Copy data1",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "get_max_date_for_cdc",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "JsonSource",
+						"additionalColumns": [
+							{
+								"name": "cdc",
+								"value": {
+									"value": "@activity('get_max_date_for_cdc').output.resultSets[0].rows[0].cdc",
+									"type": "Expression"
+								}
+							}
+						],
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": true,
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "JsonReadSettings"
+						}
+					},
+					"sink": {
+						"type": "JsonSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "JsonWriteSettings"
+						}
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "proj_JsonDynamic",
+						"type": "DatasetReference",
+						"parameters": {
+							"container": "bronze",
+							"folder": "cdc",
+							"file": "empty.json"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "proj_JsonDynamic",
+						"type": "DatasetReference",
+						"parameters": {
+							"container": "bronze",
+							"folder": "cdc",
+							"file": "cdc.json"
+						}
+					}
+				]
+			},
+			{
+				"name": "get_max_date_for_cdc",
+				"type": "Script",
+				"dependsOn": [
+					{
+						"activity": "azuresql_to_satalake",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"linkedServiceName": {
+					"referenceName": "LS_AzureSQL",
+					"type": "LinkedServiceReference"
+				},
+				"typeProperties": {
+					"scripts": [
+						{
+							"type": "Query",
+							"text": {
+								"value": "select max(@{pipeline().parameters.cdc_col}) as cdc \nfrom @{pipeline().parameters.schema}.@{pipeline().parameters.table}",
+								"type": "Expression"
+							}
+						}
+					],
+					"scriptBlockExecutionTimeout": "02:00:00"
 				}
 			}
 		],
