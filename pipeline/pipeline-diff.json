@@ -56,7 +56,7 @@
 							"userProperties": [],
 							"typeProperties": {
 								"on": {
-									"value": "@(last(split(item().name,'.'))\r\n",
+									"value": "@last(split(item().name,'.'))",
 									"type": "Expression"
 								},
 								"cases": [
@@ -126,7 +126,7 @@
 														"type": "DatasetReference",
 														"parameters": {
 															"file_name": {
-																"value": "@item().name",
+																"value": "@replace(item().name,'.json','.csv')",
 																"type": "Expression"
 															}
 														}
@@ -191,7 +191,7 @@
 														"type": "DatasetReference",
 														"parameters": {
 															"file_name": {
-																"value": "@item().name",
+																"value": "@replace(item().name,'.csv','.json')",
 																"type": "Expression"
 															}
 														}
