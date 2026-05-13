@@ -125,7 +125,10 @@
 														"referenceName": "DS_SINK_CSV",
 														"type": "DatasetReference",
 														"parameters": {
-															"file_name": "@item().name"
+															"file_name": {
+																"value": "@item().name",
+																"type": "Expression"
+															}
 														}
 													}
 												]
